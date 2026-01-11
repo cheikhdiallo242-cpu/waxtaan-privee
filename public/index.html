@@ -2,24 +2,33 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Waxtaan Privée</title>
+  <title>🔒 Waxtaan Privée</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <h2>🔒 Waxtaan Privée</h2>
+<h1>🔒 Waxtaan Privée</h1>
 
-  <input id="name" placeholder="Ton pseudo" />
-  <input id="room" placeholder="Nom du salon" />
-  <button onclick="join()">Entrer</button>
+<div id="login">
+  <input id="pseudo" placeholder="Ton pseudo">
+  <input id="room" placeholder="Nom du salon">
+  <input id="password" placeholder="Mot de passe" type="password">
+  <button id="join">Entrer</button>
+  <p id="error"></p>
+</div>
 
-  <hr>
+<div id="chat" hidden>
+  <div id="online-users">👥 En ligne :</div>
 
-  <div id="chat"></div>
+  <div id="messages"></div>
 
-  <input id="msg" placeholder="Écris ton message" />
-  <button onclick="send()">Envoyer</button>
+  <input id="message" placeholder="Écris ton message">
+  <button id="send">Envoyer</button>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="script.js"></script>
+  <button id="record">🎤 Message vocal</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
