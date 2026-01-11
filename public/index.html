@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Waxtaan Privée</title>
+</head>
+<body>
+
+  <h2>🔒 Waxtaan Privée</h2>
+
+  <input id="name" placeholder="Ton pseudo" />
+  <input id="room" placeholder="Nom du salon" />
+  <button onclick="join()">Entrer</button>
+
+  <hr>
+
+  <div id="chat"></div>
+
+  <input id="msg" placeholder="Écris ton message" />
+  <button onclick="send()">Envoyer</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
