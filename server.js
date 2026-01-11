@@ -8,28 +8,63 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-io.on("connection", (socket) => {
-  console.log("Utilisateur connecté");
+const rooms = {}; 
+// rooms[roomName] = { password: "1234", users: [] }
 
-  socket.on("joinRoom", ({ username, room }) => {
-    socket.username = username;
-    socket.room = room;
+io.on("connection", socket => {
+
+  socket.on("join-room", ({ pseudo, room, password }) => {
+
+    if (!rooms[room]) {
+      rooms[room] = { password, users: [] };
+    }
+
+    if (rooms[room].password !== password) {
+      socket.emit("wrong-password");
+      return;
+    }
+
     socket.join(room);
+    socket.room = room;
+    socket.pseudo = pseudo;
 
-    socket.to(room).emit(
-      "system",
-      `👋 ${username} a rejoint le salon`
+    rooms[room].users.push({ id: socket.id, pseudo });
+
+    io.to(room).emit(
+      "users-online",
+      rooms[room].users.map(u => u.pseudo)
     );
   });
 
-  socket.on("chat", (message) => {
-    io.to(socket.room).emit("chat", {
-      user: socket.username,
-      message
+  socket.on("send-message", msg => {
+    io.to(socket.room).emit("new-message", {
+      pseudo: socket.pseudo,
+      message: msg
     });
+  });
+
+  socket.on("voice-message", audio => {
+    io.to(socket.room).emit("new-voice", {
+      pseudo: socket.pseudo,
+      audio
+    });
+  });
+
+  socket.on("disconnect", () => {
+    const room = socket.room;
+    if (!room || !rooms[room]) return;
+
+    rooms[room].users =
+      rooms[room].users.filter(u => u.id !== socket.id);
+
+    io.to(room).emit(
+      "users-online",
+      rooms[room].users.map(u => u.pseudo)
+    );
   });
 });
 
-server.listen(process.env.PORT || 3000, () => {
-  console.log("Waxtaan Privée est en ligne");
-});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () =>
+  console.log("Waxtaan Privée lancé 🚀")
+);
