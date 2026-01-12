@@ -3,6 +3,7 @@ const socket = io();
 const joinBtn = document.getElementById("join");
 const sendBtn = document.getElementById("send");
 const recordBtn = document.getElementById("record");
+const imageInput = document.getElementById("image");
 
 const pseudo = document.getElementById("pseudo");
 const room = document.getElementById("room");
@@ -35,7 +36,7 @@ socket.on("users-online", users => {
   online.innerText = "👥 En ligne : " + users.join(", ");
 });
 
-/* 💬 Messages texte */
+/* 💬 Message texte */
 sendBtn.onclick = () => {
   if (!messageInput.value) return;
   socket.emit("send-message", messageInput.value);
@@ -43,54 +44,76 @@ sendBtn.onclick = () => {
 };
 
 socket.on("new-message", data => {
-  const div = document.createElement("div");
-  div.className = "message";
-  div.innerHTML = `<b>[${data.time}] ${data.pseudo}</b><br>${data.message}`;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
+  addMessage(`
+    <b>[${data.time}] ${data.pseudo}</b><br>
+    ${data.message}
+  `);
 });
 
-/* 🎤 MESSAGES VOCAUX — VERSION STABLE */
-let recorder = null;
-let audioChunks = [];
+/* 📸 IMAGE (CORRIGÉ) */
+imageInput.onchange = () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    socket.emit("send-image", reader.result);
+  };
+  reader.readAsDataURL(file);
+};
+
+socket.on("new-image", data => {
+  addMessage(`
+    <b>[${data.time}] ${data.pseudo}</b><br>
+    <img src="${data.img}" style="max-width:200px;display:block">
+    <a href="${data.img}" download="waxtaan-image.png">⬇️ Télécharger</a>
+  `);
+});
+
+/* 🎤 MESSAGE VOCAL (CORRIGÉ) */
+let recorder;
+let chunks = [];
 let recording = false;
 
 recordBtn.onclick = async () => {
   if (!recording) {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    recorder = new MediaRecorder(stream);
-    audioChunks = [];
+    recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    chunks = [];
 
-    recorder.ondataavailable = e => audioChunks.push(e.data);
+    recorder.ondataavailable = e => chunks.push(e.data);
 
     recorder.onstop = () => {
-      const blob = new Blob(audioChunks, { type: "audio/webm" });
+      const blob = new Blob(chunks, { type: "audio/webm" });
       const reader = new FileReader();
-
-      reader.onloadend = () => {
+      reader.onload = () => {
         socket.emit("voice-message", reader.result);
       };
-
       reader.readAsDataURL(blob);
-      recordBtn.innerText = "🎤 Message vocal";
     };
 
     recorder.start();
-    recording = true;
     recordBtn.innerText = "⏹️ Stop";
+    recording = true;
   } else {
     recorder.stop();
+    recordBtn.innerText = "🎤 Message vocal";
     recording = false;
   }
 };
 
 socket.on("new-voice", data => {
-  const div = document.createElement("div");
-  div.className = "message";
-  div.innerHTML = `
+  addMessage(`
     <b>[${data.time}] ${data.pseudo}</b><br>
     <audio controls src="${data.audio}"></audio>
-  `;
+  `);
+});
+
+/* 🔁 UTILITAIRE */
+function addMessage(html) {
+  const div = document.createElement("div");
+  div.className = "message";
+  div.innerHTML = html;
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
-});
+}
