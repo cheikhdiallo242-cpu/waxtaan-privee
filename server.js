@@ -8,13 +8,11 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-const rooms = {}; 
-// rooms[roomName] = { password: "1234", users: [] }
+const rooms = {};
 
 io.on("connection", socket => {
 
   socket.on("join-room", ({ pseudo, room, password }) => {
-
     if (!rooms[room]) {
       rooms[room] = { password, users: [] };
     }
@@ -39,14 +37,22 @@ io.on("connection", socket => {
   socket.on("send-message", msg => {
     io.to(socket.room).emit("new-message", {
       pseudo: socket.pseudo,
-      message: msg
+      message: msg,
+      time: new Date().toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
     });
   });
 
-  socket.on("voice-message", audio => {
-    io.to(socket.room).emit("new-voice", {
+  socket.on("send-image", img => {
+    io.to(socket.room).emit("new-image", {
       pseudo: socket.pseudo,
-      audio
+      img,
+      time: new Date().toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
     });
   });
 
@@ -65,6 +71,6 @@ io.on("connection", socket => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () =>
-  console.log("Waxtaan Privée lancé 🚀")
-);
+server.listen(PORT, () => {
+  console.log("🚀 Waxtaan Privée v1 lancé");
+});
