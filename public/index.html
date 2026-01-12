@@ -16,7 +16,7 @@
   <input id="pseudo" placeholder="Ton pseudo">
   <input id="room" placeholder="Nom du salon">
   <input id="password" type="password" placeholder="Mot de passe">
-  <button id="join">Entrer</button>
+  <button id="join" type="button">Entrer</button>
   <p id="error"></p>
 </div>
 
@@ -26,10 +26,9 @@
   <div id="messages"></div>
 
   <input id="message" placeholder="Écris ton message">
-  <button id="send">Envoyer</button>
+  <button id="send" type="button">Envoyer</button>
 
-  <!-- ✅ BOUTON IMAGE -->
-  <label style="cursor:pointer;">
+  <label style="cursor:pointer;display:block;margin-top:10px;">
     📸 Envoyer une image
     <input type="file" id="imageInput" accept="image/*" hidden>
   </label>
