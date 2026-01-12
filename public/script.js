@@ -41,13 +41,21 @@ socket.on("users-online", users => {
   online.innerText = "👥 En ligne : " + users.join(", ");
 });
 
-/* ===== MESSAGE TEXTE ===== */
-sendBtn.onclick = () => {
+/* ===== ENVOI MESSAGE TEXTE ===== */
+sendBtn.onclick = sendMessage;
+
+messageInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") sendMessage();
+});
+
+function sendMessage() {
   if (!messageInput.value) return;
+
   socket.emit("send-message", messageInput.value);
   messageInput.value = "";
-};
+}
 
+/* ===== RÉCEPTION MESSAGE TEXTE ===== */
 socket.on("new-message", data => {
   const div = document.createElement("div");
   div.className = "message";
