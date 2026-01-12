@@ -27,7 +27,6 @@ io.on("connection", socket => {
     socket.pseudo = pseudo;
 
     rooms[room].users.push(pseudo);
-
     io.to(room).emit("users-online", rooms[room].users);
   });
 
@@ -35,6 +34,14 @@ io.on("connection", socket => {
     io.to(socket.room).emit("new-message", {
       pseudo: socket.pseudo,
       message: msg,
+      time: new Date().toLocaleTimeString()
+    });
+  });
+
+  socket.on("send-image", img => {
+    io.to(socket.room).emit("new-image", {
+      pseudo: socket.pseudo,
+      img,
       time: new Date().toLocaleTimeString()
     });
   });
@@ -51,11 +58,10 @@ io.on("connection", socket => {
     if (!socket.room) return;
     rooms[socket.room].users =
       rooms[socket.room].users.filter(u => u !== socket.pseudo);
-
     io.to(socket.room).emit("users-online", rooms[socket.room].users);
   });
 });
 
 server.listen(3000, () => {
-  console.log("Waxtaan Privée en ligne");
+  console.log("Waxtaan Privée OK");
 });
