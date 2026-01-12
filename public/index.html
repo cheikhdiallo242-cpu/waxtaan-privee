@@ -28,13 +28,20 @@
   <input id="message" placeholder="Écris ton message">
   <button id="send" type="button">Envoyer</button>
 
+  <!-- 📸 IMAGE -->
   <label style="cursor:pointer;display:block;margin-top:10px;">
     📸 Envoyer une image
-    <input type="file" id="imageInput" accept="image/*" hidden>
+    <input type="file" id="image" accept="image/*" hidden>
   </label>
+
+  <!-- 🎤 MESSAGE VOCAL -->
+  <button id="record" style="margin-top:10px;">
+    🎤 Message vocal
+  </button>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="script.js"></script>
+
 </body>
 </html>
