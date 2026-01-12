@@ -1,8 +1,8 @@
 const socket = io();
 
-/* ===== ELEMENTS ===== */
 const joinBtn = document.getElementById("join");
 const sendBtn = document.getElementById("send");
+const recordBtn = document.getElementById("record");
 
 const pseudo = document.getElementById("pseudo");
 const room = document.getElementById("room");
@@ -15,15 +15,9 @@ const error = document.getElementById("error");
 const messageInput = document.getElementById("message");
 const messages = document.getElementById("messages");
 const online = document.getElementById("online-users");
-const imageInput = document.getElementById("imageInput");
 
-/* ===== CONNEXION ===== */
+/* 🔐 Connexion */
 joinBtn.onclick = () => {
-  if (!pseudo.value || !room.value || !password.value) {
-    error.innerText = "❗ Remplis tous les champs";
-    return;
-  }
-
   socket.emit("join-room", {
     pseudo: pseudo.value,
     room: room.value,
@@ -41,49 +35,61 @@ socket.on("users-online", users => {
   online.innerText = "👥 En ligne : " + users.join(", ");
 });
 
-/* ===== ENVOI MESSAGE TEXTE ===== */
-sendBtn.onclick = sendMessage;
-
-messageInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") sendMessage();
-});
-
-function sendMessage() {
+/* 💬 Messages texte */
+sendBtn.onclick = () => {
   if (!messageInput.value) return;
-
   socket.emit("send-message", messageInput.value);
   messageInput.value = "";
-}
+};
 
-/* ===== RÉCEPTION MESSAGE TEXTE ===== */
 socket.on("new-message", data => {
   const div = document.createElement("div");
   div.className = "message";
-  div.innerText = `[${data.time}] ${data.pseudo} : ${data.message}`;
+  div.innerHTML = `<b>[${data.time}] ${data.pseudo}</b><br>${data.message}`;
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
 });
 
-/* ===== IMAGE ===== */
-imageInput.onchange = e => {
-  const file = e.target.files[0];
-  if (!file) return;
+/* 🎤 MESSAGES VOCAUX — VERSION STABLE */
+let recorder = null;
+let audioChunks = [];
+let recording = false;
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    socket.emit("send-image", reader.result);
-  };
-  reader.readAsDataURL(file);
+recordBtn.onclick = async () => {
+  if (!recording) {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    audioChunks = [];
+
+    recorder.ondataavailable = e => audioChunks.push(e.data);
+
+    recorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: "audio/webm" });
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        socket.emit("voice-message", reader.result);
+      };
+
+      reader.readAsDataURL(blob);
+      recordBtn.innerText = "🎤 Message vocal";
+    };
+
+    recorder.start();
+    recording = true;
+    recordBtn.innerText = "⏹️ Stop";
+  } else {
+    recorder.stop();
+    recording = false;
+  }
 };
 
-socket.on("new-image", data => {
+socket.on("new-voice", data => {
   const div = document.createElement("div");
   div.className = "message";
   div.innerHTML = `
     <b>[${data.time}] ${data.pseudo}</b><br>
-    <img src="${data.img}" style="max-width:200px;border-radius:6px;margin:5px 0;">
-    <br>
-    <a href="${data.img}" download="waxtaan-image.png">⬇️ Télécharger</a>
+    <audio controls src="${data.audio}"></audio>
   `;
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
