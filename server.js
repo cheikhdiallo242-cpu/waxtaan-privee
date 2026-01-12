@@ -26,51 +26,36 @@ io.on("connection", socket => {
     socket.room = room;
     socket.pseudo = pseudo;
 
-    rooms[room].users.push({ id: socket.id, pseudo });
+    rooms[room].users.push(pseudo);
 
-    io.to(room).emit(
-      "users-online",
-      rooms[room].users.map(u => u.pseudo)
-    );
+    io.to(room).emit("users-online", rooms[room].users);
   });
 
   socket.on("send-message", msg => {
     io.to(socket.room).emit("new-message", {
       pseudo: socket.pseudo,
       message: msg,
-      time: new Date().toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
+      time: new Date().toLocaleTimeString()
     });
   });
 
-  socket.on("send-image", img => {
-    io.to(socket.room).emit("new-image", {
+  socket.on("voice-message", audio => {
+    io.to(socket.room).emit("new-voice", {
       pseudo: socket.pseudo,
-      img,
-      time: new Date().toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
+      audio,
+      time: new Date().toLocaleTimeString()
     });
   });
 
   socket.on("disconnect", () => {
-    const room = socket.room;
-    if (!room || !rooms[room]) return;
+    if (!socket.room) return;
+    rooms[socket.room].users =
+      rooms[socket.room].users.filter(u => u !== socket.pseudo);
 
-    rooms[room].users =
-      rooms[room].users.filter(u => u.id !== socket.id);
-
-    io.to(room).emit(
-      "users-online",
-      rooms[room].users.map(u => u.pseudo)
-    );
+    io.to(socket.room).emit("users-online", rooms[socket.room].users);
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log("🚀 Waxtaan Privée v1 lancé");
+server.listen(3000, () => {
+  console.log("Waxtaan Privée en ligne");
 });
