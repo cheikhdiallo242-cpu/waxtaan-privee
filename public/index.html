@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>🔒 Waxtaan Privée</title>
+
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#22c55e">
 </head>
 <body>
 
@@ -12,7 +15,7 @@
 <div id="login">
   <input id="pseudo" placeholder="Ton pseudo">
   <input id="room" placeholder="Nom du salon">
-  <input id="password" placeholder="Mot de passe" type="password">
+  <input id="password" type="password" placeholder="Mot de passe">
   <button id="join">Entrer</button>
   <p id="error"></p>
 </div>
@@ -25,7 +28,11 @@
   <input id="message" placeholder="Écris ton message">
   <button id="send">Envoyer</button>
 
-  <button id="record">🎤 Message vocal</button>
+  <!-- ✅ BOUTON IMAGE -->
+  <label style="cursor:pointer;">
+    📸 Envoyer une image
+    <input type="file" id="imageInput" accept="image/*" hidden>
+  </label>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
